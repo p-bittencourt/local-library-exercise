@@ -45,13 +45,13 @@ AuthorSchema.virtual('lifespan').get(function () {
   }
 });
 
-AuthorSchema.virtual('formatted_dob').get(function () {
+AuthorSchema.virtual('formatted_date_of_birth').get(function () {
   return this.date_of_birth
     ? this.date_of_birth.toISOString().slice(0, 10)
     : '';
 });
 
-AuthorSchema.virtual('formatted_dod').get(function () {
+AuthorSchema.virtual('formatted_date_of_death').get(function () {
   return this.date_of_death
     ? this.date_of_death.toISOString().slice(0, 10)
     : '';
