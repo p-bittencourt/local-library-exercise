@@ -1,0 +1,22 @@
+<h1>Delete Book Instance ID: <%= bookinstance._id%></h1>
+<p>
+  Book: <a href="<%= bookinstance.book.url %>"><%= bookTitle %></a> by <%=
+  bookAuthor %>
+</p>
+<p>Status: <%= bookinstance.status %></p>
+<p>Due back: <%= bookinstance.due_back.toDateString() %></p>
+<p>Imprint: <%= bookinstance.imprint %></p>
+
+<p>Do you really want to delete this Book Instance?</p>
+<form method="POST">
+  <div class="form-group">
+    <input
+      id="bookinstanceid"
+      class="form-control"
+      type="hidden"
+      name="bookinstanceid"
+      value="<%= bookinstance._id %>"
+    />
+  </div>
+  <button class="btn btn-primary" type="submit">Delete</button>
+</form>
