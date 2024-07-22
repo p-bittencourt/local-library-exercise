@@ -5,6 +5,9 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const expressLayout = require('express-ejs-layouts');
 const mongoose = require('mongoose');
+const compression = require('compression');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
 const indexRouter = require('./routes/index');
@@ -18,29 +21,43 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 app.use(expressLayout);
 
+app.use(compression());
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+// Set CSP headers to allow our Bootstrap and Jquery to be served
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      'script-src': ["'self'", 'code.jquery.com', 'cdn.jsdelivr.net'],
+    },
+  })
+);
 
 // connect to mongoose
 mongoose.set('strictQuery', false);
 
-const dbUser = process.env.DB_USER;
-const dbPassword = process.env.DB_PASSWORD;
-const mongoDB = `mongodb+srv://${dbUser}:${dbPassword}@cluster0.anxedxt.mongodb.net/local-library?retryWrites=true&w=majority&appName=Cluster0`;
-
-async function connectToDatabase() {
+async function connectToDatabase(req, res, next) {
   try {
-    await mongoose.connect(mongoDB);
-    console.log('Sucessfully connected to MongoDB.');
+    await mongoose.connect(process.env.MONGODB_URI);
+    next();
   } catch (error) {
-    console.error('Error connecting to MongoDB:', error);
+    next(error);
   }
 }
 
-connectToDatabase();
+const limiter = rateLimit({
+  windowsMs: 1 * 60 * 100,
+  max: 20,
+});
+
+// Call connectToDatabase and handle the error
+app.use(connectToDatabase);
+
+// Call limiter
+app.use(limiter);
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
